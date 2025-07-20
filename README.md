@@ -1,4 +1,4 @@
-# MineKeo2FA - 2.0
+# MineKeo2FA - 3.0
 
 > **"Đây là gì?"** - Nó là một plugin độc quyền của MineKeo giúp tăng một lớp bảo mật cho người chơi sau khi đăng nhập
 
@@ -25,8 +25,6 @@
 | `/minekeo2fa help` | Xem danh sách lệnh có thể dùng |
 | `/baomat` | Liên kết với tài khoản Discord |
 | `/minekeo2fa link` | Giống với `/baomat` |
-| `/minekeo2fa enable` | Bật tính năng bảo mật (Mặc định là bật sau khi liên kết) |
-| `/minekeo2fa disable` | Tắt tính năng bảo mật (Nếu bạn không cần bảo mật nữa) |
 
 ## 🔐 Tính năng Đổi mật khẩu
 
@@ -59,8 +57,8 @@ Mã của bạn sẽ thay đổi với mỗi lần thay đổi mật khẩu qua 
 
 ## 🤝 Hỗ trợ
 
-Nếu gặp vấn đề hoặc cần hỗ trợ, vui lòng liên hệ với đội ngũ MineKeo qua Discord.
+Nếu gặp vấn đề hoặc cần hỗ trợ, vui lòng liên hệ với đội ngũ MineKeo qua [Discord](https://discord.gg/minekeo).
 
 ---
 
-**MineKeo2FA v2.0** - Bảo vệ tài khoản của bạn một cách thông minh! 🔒 
+**MineKeo2FA v3.0** - Bảo vệ tài khoản của bạn một cách thông minh! 🔒 
