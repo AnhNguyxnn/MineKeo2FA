@@ -1,0 +1,320 @@
+# MineKeo2FA Configuration
+# Version 2.0
+
+# Discord Bot Configuration
+discord:
+  bot-token: "YOUR_BOT_TOKEN_HERE"
+  guild-id: "YOUR_GUILD_ID_HERE"
+  verification-channel-id: "YOUR_VERIFICATION_CHANNEL_ID_HERE"
+  admin-role-id: "YOUR_ADMIN_ROLE_ID_HERE"
+  # Channel ID để gửi thông báo staff IP (không cần captcha channel nữa)
+  staff-alert-channel-id: "YOUR_STAFF_ALERT_CHANNEL_ID_HERE"
+  # Danh sách activity cho bot Discord (hiện ở dưới tên bot, sẽ đổi ngẫu nhiên)
+  activities:
+    - "Bảo mật tài khoản..."
+    - "Chơi Minecraft cùng bạn!"
+    - "Hãy bật 2FA để an toàn!"
+  # Thời gian đổi activity (giây)
+  activity-interval: 300
+
+# Security Settings
+security:
+  # Thời gian hết hạn captcha (giây)
+  captcha-expire-time: 300
+  # Thời gian session hợp lệ (phút)
+  session-duration: 30
+  # Thời gian freeze player (giây)
+  freeze-duration: 60
+
+# Captcha Settings
+captcha:
+  length: 6
+  characters: "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+
+# Linking Settings
+linking:
+  max-links-per-discord: 3
+  recovery-code-length: 8
+
+# Thêm cấu hình delay cho unlink
+unlink-delay-seconds: 300
+
+# Session Settings
+session:
+  enabled: true
+  session-time-enabled: false
+  session-time: 86400
+
+# Staff IP Configuration
+staff-ip:
+  enabled: false
+  # This section will be used to store staff IP addresses.
+  # format:
+  # 'staff:'
+  #   - 'ip1'
+  #   - 'ip2'
+  staffIPs:
+    staffMemberNameHere:
+      - "1.1.1.1"
+      - "0.0.0.0"
+  punish:
+    staff-ip-not-verified:
+      - "kick %player% Bạn đang sử dụng IP của staff! Vui lòng liên hệ admin."
+    delay: 10
+
+# Blocking Settings
+blocking-settings:
+  block-movement: true
+  block-chat: true
+  block-commands: true
+  block-item-drop: true
+  block-item-pickup: true
+  block-damage: true
+  block-damaging-entity: true
+  block-inventory-open: true
+  allowed-commands:
+    - "/baomat"
+    - "/register"
+    - "/l"
+    - "/reg"
+    # Thêm các lệnh bạn muốn cho phép khi bị đóng băng
+
+# IP Blacklist Settings
+ip-blacklist:
+  - "123.123.123.123"
+  - "45.67.89.0/24"
+# Thông báo kick khi đăng nhập từ IP bị cấm
+blacklist-ip-punish: "§cIP của bạn đã bị cấm truy cập máy chủ! Nếu bạn nghĩ đây là nhầm lẫn, hãy liên hệ admin."
+
+# Messages - Tất cả message có thể tùy chỉnh
+messages:
+  prefix: "§8[§bMineKeo2FA§8] "
+  
+  # Command messages
+  player-only: "§cLệnh này chỉ dành cho người chơi!"
+  minekeo2fa-usage: "§7Sử dụng: §e/minekeo2fa <link|unlink|status>"
+  # baomat-usage: "§7Sử dụng: §e/baomat <link|status>"  # Đã xóa vì không còn dùng
+  
+  # Link messages
+  already-linked: "§cTài khoản đã được liên kết với Discord!"
+  not-linked: "§cTài khoản chưa được liên kết với Discord!"
+  link-success: "§aLiên kết thành công với Discord!"
+  unlink-success: "§aĐã hủy liên kết tài khoản!"
+  unlink-request-sent: "§eYêu cầu hủy liên kết đã được gửi đến Discord!"
+  unlink-confirm: "§eYêu cầu hủy liên kết đã được gửi. Vui lòng xác nhận trên Discord."
+  unlink-delay: "§cBạn vừa gửi yêu cầu hủy liên kết. Vui lòng chờ %seconds% giây trước khi gửi tiếp."
+  
+  # Captcha messages
+  captcha-generated: "§aMã captcha đã được gửi!"
+  captcha-invalid: "§cMã captcha không hợp lệ hoặc đã hết hạn!"
+  captcha-warning: "§c⚠️ Lưu ý: Không được chat mã captcha lên kênh chat công khai!"
+  captcha-guild-info: "§7Vui lòng vào kênh §e%channel%§7 tại §e%guild%§7 và dùng lệnh /link <mã_captcha>"
+  captcha-click-here: "§7Click vào đây để xem mã captcha"
+  
+  # Verification messages
+  verification-sent: "§aYêu cầu xác minh đã được gửi đến Discord!"
+  verification-success: "§aXác minh thành công! Bạn có thể chơi game."
+  verification-failed: "§cXác minh thất bại hoặc hết thời gian!"
+  2fa-verification-required: "§cBạn cần xác minh 2FA để tiếp tục!"
+  verification-discord: "§eVui lòng xác minh qua Discord để tiếp tục!"
+  verify-request-expired: "❌ Yêu cầu xác thực này đã hết hạn hoặc đã được xử lý!"
+  unlink-request-expired: "❌ Yêu cầu hủy liên kết này đã hết hạn hoặc đã được xử lý!"
+  
+  # Freeze messages
+  freeze-message: "§cBạn đã bị đóng băng! Vui lòng xác minh qua Discord."
+  frozen: "§c❄️ Bạn đã bị đóng băng! Vui lòng xác minh qua Discord."
+  unfreeze-success: "§aBạn đã được mở khóa!"
+  
+  # OP messages
+  op-2fa-required: "§c⚠️ Bạn có quyền OP nhưng chưa bật 2FA!"
+  op-2fa-frozen: "§cBạn sẽ bị đóng băng cho đến khi hoàn thành 2FA!"
+  op-unfreeze-success: "§aBạn đã xác thực thành công và được mở khóa!"
+  
+  # 2FA suggestion
+  2fa-suggestion: "§7💡 Gợi ý: Bật 2FA để bảo mật tài khoản tốt hơn!"
+  enable-2fa: "§7Sử dụng §e/baomat §7để bảo mật tài khoản tốt hơn!"
+  
+  # Staff IP messages
+  staff-ip-alert: "§c⚠️ Cảnh báo: Staff %player% đăng nhập từ IP %ip%!"
+  
+  # Status messages
+  # status-linked: "§eTrạng thái 2FA: %status%"  # Đã xóa vì không còn dùng
+  status-discord-linked: "§7Tài khoản đã liên kết với Discord"
+  status-discord-info: "§7Discord: §e%discord_name%"
+  status-discord-id: "§7Discord ID: §e%discord_id%"
+  status-last-ip: "§7IP cuối cùng: §e%ip%"
+  status-not-linked: "§cTài khoản chưa được liên kết!"
+  status-link-suggestion: "§7Sử dụng §e/minekeo2fa link §7để liên kết"
+  
+  # Password change messages
+  password-change-success: "§aMật khẩu đã được đổi thành công!"
+  password-change-failed: "§cĐổi mật khẩu thất bại!"
+  recovery-code-invalid: "§cMã khôi phục không hợp lệ!"
+  
+  # Kick messages
+  kick-verification-failed: "Xác thực 2FA thất bại!"
+  kick-staff-ip: "Bạn đang sử dụng IP của staff! Vui lòng liên hệ admin."
+  kick-unverified: "Tài khoản chưa được xác thực!"
+
+  #Ban messages
+  ban-blacklist-ip: "§cBạn đang xâm nhập bất hợp pháp server, tạo ticket nếu đây là một sự hiểu lầm!"
+
+  reload-success: "§aMineKeo2FA đã reload thành công!"
+  reload-fail: "§cĐã xảy ra lỗi khi reload: %error%"
+
+  baomat-help:
+    - "§8[§bMineKeo2FA§8] §eLệnh bảo mật:"
+    - "§7/baomat link §8- §fLiên kết tài khoản với Discord"
+    - "§7/baomat status §8- §fXem trạng thái 2FA"
+    - "§7/baomat unlink §8- §fHủy liên kết tài khoản"
+  minekeo2fa-admin-help:
+    - "§7Admin commands: §e/minekeo2fa debug"
+
+# Discord Bot Commands
+discord-commands:
+  link:
+    description: "Liên kết tài khoản Minecraft với Discord"
+    usage: "/link <mã_captcha>"
+  link-admin:
+    description: "Liên kết tài khoản Minecraft với Discord Admin"
+    usage: "/link <user> <minecraft-name>"
+  unlink:
+    description: "Hủy liên kết tài khoản"
+    usage: "/unlink"
+  unlink-admin:
+    description: "Hủy liên kết tài khoản Admin"
+    usage: "/unlink <minecraft-name>"
+  check:
+    description: "Xem danh sách tài khoản đã liên kết"
+    usage: "/check"
+  check-admin:
+    description: "Xem tất cả account liên kết với Discord (Admin)"
+    usage: "/check-admin"
+  doimatkhau:
+    description: "Đổi mật khẩu Minecraft qua Discord"
+    usage: "/doimatkhau <mã_khôi_phục> <mật_khẩu_mới>" 
+
+# Discord embed/reply messages
+# Sử dụng {player}, {ip}, {discord}, {code}, ... làm placeholder
+
+discord-messages:
+  # ==== Xác minh đăng nhập (Verification) ====
+  verify-title: "🔐 Ai đang đăng nhập tài khoản của bạn?"
+  verify-desc: "Tài khoản của bạn vừa được đăng nhập trong máy chủ, vui lòng xác nhận đó có phải là bạn hay không. Nếu không phải bạn, hãy đổi mật khẩu ngay lập tức!"
+  verify-field-player: "👤 Tên người chơi"
+  verify-field-ip: "🌐 Địa chỉ IP / ISP"
+  verify-field-location: "📍 Thành phố / Quốc gia"
+  verify-field-time: "⏰ Thời gian"
+  verify-footer: "MineKeo2FA Security • Bảo vệ tài khoản của bạn"
+  verify-btn-accept: "✅ Đây là tôi"
+  verify-btn-reject: "❌ Không phải tôi"
+  verify-btn-username: "%player%"
+  verify-response-accept: "✅ Bạn đã xác nhận đăng nhập thành công!"
+  verify-response-reject: "❌ Bạn đã từ chối đăng nhập. Nếu không phải bạn, hãy đổi mật khẩu ngay!"
+  verify-response-username: "👤 Đây là tên tài khoản Minecraft của bạn."
+
+  # ==== Mã khôi phục (Recovery) ====
+  recovery-title: "🔑 Mã khôi phục"
+  recovery-desc: "Tài khoản %player% đã được liên kết thành công!"
+  recovery-field-code: "Mã khôi phục"
+  recovery-field-note: "Lưu ý"
+  recovery-field-note-value: "Hãy lưu mã này ở nơi an toàn để đổi mật khẩu sau này"
+  recovery-footer: "MineKeo2FA Security"
+
+  # ==== Xác nhận hủy liên kết (Unlink Confirmation) ====
+  unlink-confirm-title: "🔗 Xác nhận hủy liên kết"
+  unlink-confirm-desc: "Bạn có chắc chắn muốn hủy liên kết tài khoản **%player%** không?"
+  unlink-confirm-field-warning: "⚠️ Lưu ý"
+  unlink-confirm-field-warning-value: "Sau khi hủy liên kết, bạn sẽ cần liên kết lại để sử dụng 2FA"
+  unlink-confirm-btn-confirm: "✅ Có, hủy liên kết"
+  unlink-confirm-btn-cancel: "❌ Không, giữ nguyên"
+  unlink-confirm-footer: "MineKeo2FA Security"
+  unlink-confirm-response-accept: "✅ Đã xác nhận hủy liên kết thành công!"
+  unlink-confirm-response-cancel: "❌ Đã hủy thao tác hủy liên kết."
+  unlink-confirm-response-select: "✅ Đã chọn tài khoản để hủy liên kết, kiểm tra tin nhắn xác nhận."
+  unlink-confirm-response-error: "❌ Lỗi khi chọn tài khoản để hủy liên kết."
+  unlink-confirm-single: "✅ Đã gửi xác nhận hủy liên kết cho tài khoản của bạn!"
+
+  # ==== Chọn tài khoản để hủy liên kết (Unlink Select) ====
+  unlink-select-title: "Chọn tài khoản để hủy liên kết"
+  unlink-select-desc: "Bạn có nhiều tài khoản, hãy chọn một để hủy liên kết."
+  unlink-select-footer: "MineKeo2FA Security"
+  unlink-select-placeholder: "Chọn tài khoản Minecraft"
+  unlink-select-option: "Tài khoản %player%"
+
+  # ==== Liên kết tài khoản (Link) ====
+  link-success: "✅ Liên kết thành công! Tài khoản Minecraft của bạn đã được bảo vệ bởi 2FA."
+  link-error-guild: "❌ Lệnh này chỉ dùng trong server được cấu hình!"
+  link-error-captcha: "❌ Mã captcha không hợp lệ hoặc đã hết hạn!"
+  link-error-captcha-data: "❌ Không tìm thấy dữ liệu captcha!"
+  link-error-max-links: "❌ Bạn đã đạt giới hạn tối đa tài khoản per Discord!"
+  link-error-existing-account: "❌ Tài khoản này đã được liên kết với Discord khác!"
+
+  # ==== Hủy liên kết tài khoản (Unlink) ====
+  unlink-error-guild: "❌ Lệnh này chỉ dùng trong server được cấu hình!"
+  unlink-error-no-accounts: "❌ Bạn chưa liên kết tài khoản Minecraft nào!"
+
+  # ==== Kiểm tra tài khoản (Check) ====
+  check-error-guild: "❌ Lệnh này chỉ dùng trong server được cấu hình!"
+  check-error-no-accounts: "❌ Bạn chưa liên kết tài khoản Minecraft nào!"
+  check-title: "🔎 Danh sách tài khoản đã liên kết"
+  check-desc: "Dưới đây là các tài khoản Minecraft đã liên kết với Discord của bạn."
+  check-footer: "MineKeo2FA Security"
+  # check-status-enabled: "✅ Đã bật 2FA"  # Đã xóa vì không còn dùng
+  # check-status-disabled: "❌ Chưa bật 2FA"  # Đã xóa vì không còn dùng
+
+  # ==== Kiểm tra tài khoản (Admin) ====
+  check-admin-error-guild: "❌ Lệnh này chỉ dùng trong server được cấu hình!"
+  check-admin-error-role: "❌ Chưa cấu hình role admin!"
+  check-admin-error-permission: "❌ Bạn không có quyền sử dụng lệnh này!"
+  check-admin-error-no-accounts: "❌ Chưa có tài khoản nào được liên kết!"
+  check-admin-title: "🔎 Danh sách tất cả tài khoản đã liên kết"
+  check-admin-desc: "Dưới đây là tất cả tài khoản Minecraft đã liên kết với Discord trên server."
+  check-admin-footer: "MineKeo2FA Security"
+  check-admin-more-accounts: "... và còn %count% tài khoản khác."
+  # check-admin-status-enabled: "✅ Đã bật 2FA"  # Đã xóa vì không còn dùng
+  # check-admin-status-disabled: "❌ Chưa bật 2FA"  # Đã xóa vì không còn dùng
+
+  # ==== Đổi mật khẩu (Change Password) ====
+  change-password-error-guild: "❌ Lệnh này chỉ dùng trong server được cấu hình!"
+  change-password-error-missing: "❌ Thiếu mã khôi phục hoặc mật khẩu mới!"
+  change-password-error-no-accounts: "❌ Bạn chưa liên kết tài khoản Minecraft nào!"
+  change-password-error-code: "❌ Mã khôi phục không hợp lệ!"
+  change-password-error-online: "❌ Player phải online để đổi mật khẩu!"
+  change-password-success: "✅ Đổi mật khẩu thành công! Mã khôi phục mới đã được gửi."
+  change-password-error-change: "❌ Đổi mật khẩu thất bại! Vui lòng thử lại sau."
+
+  # ==== Admin: Liên kết tài khoản (Link Admin) ====
+  link-admin-error-guild: "❌ Lệnh này chỉ dùng trong server được cấu hình!"
+  link-admin-error-role: "❌ Chưa cấu hình role admin!"
+  link-admin-error-permission: "❌ Bạn không có quyền sử dụng lệnh này!"
+  link-admin-error-player: "❌ Không tìm thấy player: %player%"
+  link-admin-error-linked: "❌ Player %player% đã được liên kết với Discord khác!"
+  link-admin-error-used: "❌ Discord này đã liên kết với player khác!"
+  link-admin-success: "✅ Đã liên kết thành công player **%player%** với Discord: %discord_name%"
+  link-admin-error-link: "❌ Liên kết thất bại! Vui lòng thử lại."
+
+  # ==== Admin: Hủy liên kết tài khoản (Unlink Admin) ====
+  unlink-admin-error-guild: "❌ Lệnh này chỉ dùng trong server được cấu hình!"
+  unlink-admin-error-role: "❌ Chưa cấu hình role admin!"
+  unlink-admin-error-permission: "❌ Bạn không có quyền sử dụng lệnh này!"
+  unlink-admin-error-player: "❌ Không tìm thấy player: %player%"
+  unlink-admin-error-discord: "❌ Player %player% chưa liên kết với Discord nào!"
+  unlink-admin-success: "✅ Đã hủy liên kết thành công player %player% khỏi Discord: %discord_name%"
+
+  # ==== Staff IP Alert ====
+  staff-ip-alert-title: "⚠️ Cảnh báo Staff IP"
+  staff-ip-alert-desc: "Có người chơi đang sử dụng IP của staff!"
+  staff-ip-alert-field-player: "Người chơi"
+  staff-ip-alert-field-ip: "IP"
+  staff-ip-alert-footer: "MineKeo2FA Security"
+
+  # ==== Blacklist IP Alert ====
+  blacklist-alert-title: "🚨 Phát hiện xâm nhập từ IP blacklist"
+  blacklist-alert-desc: "Player **%player%** vừa đăng nhập từ IP bị cấm!"
+  blacklist-alert-field-player: "Tên người chơi"
+  blacklist-alert-field-ip: "IP"
+  blacklist-alert-footer: "MineKeo2FA Security"
+
+
+

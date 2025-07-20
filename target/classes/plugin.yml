@@ -1,0 +1,36 @@
+name: MineKeo2FA
+version: '3.0'
+main: com.anhnguyen.minekeo.MineKeo2FA
+api-version: 1.21
+authors: [AnhNguyen]
+description: Plugin bảo mật 2FA cho MineKeo server
+website: https://anhnguyen.is-a.dev
+depend: [nLogin]
+
+commands:
+  minekeo2fa:
+    description: Lệnh chính của plugin MineKeo2FA
+    usage: /minekeo2fa help
+    aliases: [m2fa, 2fa]
+    permission: minekeo2fa.use
+  baomat:
+    description: Liên kết tài khoản Discord (rút gọn)
+    usage: /baomat
+    permission: minekeo2fa.link
+
+permissions:
+  minekeo2fa.*:
+    description: Tất cả quyền của MineKeo2FA
+    children:
+      minekeo2fa.use: true
+      minekeo2fa.link: true
+      minekeo2fa.admin: true
+  minekeo2fa.use:
+    description: Sử dụng các lệnh cơ bản
+    default: true
+  minekeo2fa.link:
+    description: Liên kết tài khoản Discord
+    default: true
+  minekeo2fa.admin:
+    description: Quyền admin
+    default: op
