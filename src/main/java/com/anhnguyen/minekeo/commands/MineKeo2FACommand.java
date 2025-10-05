@@ -1,7 +1,6 @@
 package com.anhnguyen.minekeo.commands;
 
 import com.anhnguyen.minekeo.MineKeo2FA;
-import com.anhnguyen.minekeo.managers.DiscordBotManager;
 import com.anhnguyen.minekeo.utils.ConfigManager;
 import com.anhnguyen.minekeo.utils.LogManager;
 import org.bukkit.command.Command;
@@ -9,12 +8,8 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
-import sun.security.krb5.Config;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+// cleaned unused imports
 import java.util.UUID;
 import java.util.HashMap;
 
@@ -31,6 +26,12 @@ public class MineKeo2FACommand implements CommandExecutor, TabCompleter {
     
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        // Cho phép console chạy reload, và tránh IndexOutOfBounds khi không có tham số
+        if (args.length > 0 && args[0].equalsIgnoreCase("reload")) {
+            handleReload(sender);
+            return true;
+        }
+
         if (!(sender instanceof Player)) {
             sender.sendMessage(config.getMessage("player-only"));
             return true;
@@ -45,7 +46,6 @@ public class MineKeo2FACommand implements CommandExecutor, TabCompleter {
         }
         
         String subCommand = args[0].toLowerCase();
-        
         switch (subCommand) {
             case "link":
                 handleLink(player);
@@ -58,9 +58,6 @@ public class MineKeo2FACommand implements CommandExecutor, TabCompleter {
                 break;
             case "debug":
                 handleDebug(player);
-                break;
-            case "reload":
-                handleReload(sender);
                 break;
             default:
                 showHelp(player);
@@ -89,7 +86,7 @@ public class MineKeo2FACommand implements CommandExecutor, TabCompleter {
     private void showHelp(Player player) {
         player.sendMessage(config.getMessage("minekeo2fa-usage"));
         if (player.hasPermission("minekeo2fa.admin")) {
-            java.util.List<String> adminHelp = config.getPlugin().getConfig().getStringList("messages.minekeo2fa-admin-help");
+            java.util.List<String> adminHelp = config.getMessageList("minekeo2fa-admin-help");
             for (String line : adminHelp) {
                 player.sendMessage(line);
             }
@@ -103,7 +100,7 @@ public class MineKeo2FACommand implements CommandExecutor, TabCompleter {
         }
         
         // Generate and send captcha
-        String captcha = plugin.getCaptchaManager().generateCaptcha(player);
+        plugin.getCaptchaManager().generateCaptcha(player);
         player.sendMessage(config.getMessage("captcha-generated"));
     }
     
@@ -176,7 +173,11 @@ public class MineKeo2FACommand implements CommandExecutor, TabCompleter {
         }
         try {
             plugin.reloadConfig();
+            plugin.getConfigManager().reloadLang();
+            plugin.refreshRuntime();
             sender.sendMessage(config.getMessage("reload-success"));
+            // Cleanup nhẹ sau reload
+            plugin.getDiscordBotManager().cleanupStaleRequests(10 * 60 * 1000L);
         } catch (Exception e) {
             sender.sendMessage(config.getMessage("reload-fail", "error", e.getMessage()));
         }
@@ -185,8 +186,8 @@ public class MineKeo2FACommand implements CommandExecutor, TabCompleter {
     public static void send2FAStatus(Player player, MineKeo2FA plugin) {
         ConfigManager config = plugin.getConfigManager();
         if (plugin.getLinkManager().isLinked(player.getUniqueId())) {
-            boolean enabled = plugin.getLinkManager().isEnabled(player.getUniqueId());
-            String status = enabled ? "§aBật" : "§cTắt";
+            // keep for future status detail if needed
+            plugin.getLinkManager().isEnabled(player.getUniqueId());
             String discordId = plugin.getLinkManager().getDiscordId(player.getUniqueId());
             player.sendMessage(config.getMessage("status-discord-linked"));
             if (discordId != null) {

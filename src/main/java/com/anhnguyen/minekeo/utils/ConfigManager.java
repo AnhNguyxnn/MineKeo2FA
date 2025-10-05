@@ -3,22 +3,35 @@ package com.anhnguyen.minekeo.utils;
 import com.anhnguyen.minekeo.MineKeo2FA;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.util.List;
+import java.io.File;
 
 public class ConfigManager {
     
     private final MineKeo2FA plugin;
     private final FileConfiguration config;
+    private FileConfiguration lang;
     
     public ConfigManager(MineKeo2FA plugin) {
         this.plugin = plugin;
         this.config = plugin.getConfig();
         plugin.saveDefaultConfig();
+        File langFile = new File(plugin.getDataFolder(), "lang.yml");
+        if (!langFile.exists()) {
+            plugin.saveResource("lang.yml", false);
+        }
+        this.lang = YamlConfiguration.loadConfiguration(langFile);
+    }
+    
+    public void reloadLang() {
+        File langFile = new File(plugin.getDataFolder(), "lang.yml");
+        this.lang = YamlConfiguration.loadConfiguration(langFile);
     }
     
     public String getMessage(String path) {
-        String message = config.getString("messages." + path);
+        String message = lang.getString("messages." + path);
         if (message == null) {
             return "Message not found: " + path;
         }
@@ -39,13 +52,13 @@ public class ConfigManager {
     }
     
     public List<String> getMessageList(String path) {
-        List<String> messages = config.getStringList("messages." + path);
+        List<String> messages = lang.getStringList("messages." + path);
         messages.replaceAll(msg -> ChatColor.translateAlternateColorCodes('&', msg));
         return messages;
     }
     
     public String getPrefix() {
-        return ChatColor.translateAlternateColorCodes('&', config.getString("messages.prefix", "&8[&bMineKeo2FA&8] &r"));
+        return ChatColor.translateAlternateColorCodes('&', lang.getString("messages.prefix", "&8[&bMineKeo2FA&8] &r"));
     }
     
     public String getDiscordToken() {
@@ -141,11 +154,11 @@ public class ConfigManager {
     }
     
     public String getOp2FARequiredMessage() {
-        return config.getString("messages.op-2fa-required", "§c⚠️ Bạn có quyền OP nhưng chưa bật 2FA!");
+        return getMessage("op-2fa-required");
     }
     
     public String getOp2FAFrozenMessage() {
-        return config.getString("messages.op-2fa-frozen", "§cBạn sẽ bị đóng băng cho đến khi hoàn thành 2FA!");
+        return getMessage("op-2fa-frozen");
     }
     
     public int getSessionDuration() {
@@ -157,7 +170,7 @@ public class ConfigManager {
     }
     
     public String getDiscordMessage(String path) {
-        String message = config.getString("discord-messages." + path);
+        String message = lang.getString("discord-messages." + path);
         if (message == null) {
             return "Message not found: " + path;
         }

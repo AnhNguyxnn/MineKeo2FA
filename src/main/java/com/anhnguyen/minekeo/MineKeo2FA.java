@@ -155,6 +155,14 @@ public final class MineKeo2FA extends JavaPlugin {
         getCommand("baomat").setExecutor(new com.anhnguyen.minekeo.commands.BaomatCommand(this));
     }
 
+    // Cho phép các thành phần refresh sau reload config/lang
+    public void refreshRuntime() {
+        if (discordBotManager != null && jda != null) {
+            discordBotManager.refreshAfterReload();
+        }
+        // Có thể thêm refresh khác nếu cần (cache, session policy, v.v.)
+    }
+
     private void registerListeners() {
         // Register NLogin hook listener
         getServer().getPluginManager().registerEvents(new NLoginListener(this), this);

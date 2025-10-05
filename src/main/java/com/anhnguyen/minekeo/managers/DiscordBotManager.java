@@ -7,23 +7,33 @@ import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
-import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
-import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.entities.emoji.Emoji;
 import com.anhnguyen.minekeo.utils.LogManager;
 
 import java.awt.Color;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+
+// Simple cache entry for IP info
+class IpInfoCacheEntry {
+    final String isp;
+    final String location;
+    final long expireAt;
+    IpInfoCacheEntry(String isp, String location, long ttlMillis) {
+        this.isp = isp;
+        this.location = location;
+        this.expireAt = System.currentTimeMillis() + ttlMillis;
+    }
+    boolean isExpired() { return System.currentTimeMillis() > expireAt; }
+}
 
 public class DiscordBotManager extends ListenerAdapter {
     
@@ -32,29 +42,39 @@ public class DiscordBotManager extends ListenerAdapter {
     private JDA jda;
     private final Map<String, VerificationData> pendingVerifications;
     private final Map<String, UnlinkData> pendingUnlinks;
+    private final Map<String, IpInfoCacheEntry> ipInfoCache = new ConcurrentHashMap<>();
     private String cachedGuildName;
     private String cachedChannelName;
     
     public DiscordBotManager(MineKeo2FA plugin) {
         this.plugin = plugin;
         this.config = plugin.getConfigManager();
-        this.pendingVerifications = new HashMap<>();
-        this.pendingUnlinks = new HashMap<>();
+        this.pendingVerifications = new ConcurrentHashMap<>();
+        this.pendingUnlinks = new ConcurrentHashMap<>();
     }
     
     public void initialize(JDA jda) {
         this.jda = jda;
         jda.addEventListener(this);
         
-        // Cache guild và channel info
-        cacheGuildAndChannelInfo();
+        // Cache và đăng ký lệnh
+        refreshAfterReload();
+    }
         
-        // Register slash commands
+    public void refreshAfterReload() {
+        // Cache guild/channel
+        cacheGuildAndChannelInfo();
+        // Register slash commands cho guild cấu hình hiện tại
         String guildId = plugin.getConfig().getString("discord.guild-id");
-        if (guildId != null && !guildId.equals("YOUR_GUILD_ID_HERE")) {
+        if (guildId == null || guildId.equals("YOUR_GUILD_ID_HERE")) {
+            LogManager.warning("Guild ID not configured! Slash commands not registered.");
+            return;
+        }
             Guild guild = jda.getGuildById(guildId);
-            if (guild != null) {
-                // Đăng ký lệnh cho guild cụ thể (xuất hiện ngay lập tức)
+        if (guild == null) {
+            LogManager.warning("Could not find guild with ID: " + guildId + ". Slash commands not registered.");
+            return;
+        }
                 guild.updateCommands().addCommands(
                     Commands.slash("link", "Liên kết tài khoản Minecraft với Discord")
                         .addOption(net.dv8tion.jda.api.interactions.commands.OptionType.STRING, "captcha", "Mã captcha từ Minecraft", true),
@@ -72,17 +92,8 @@ public class DiscordBotManager extends ListenerAdapter {
                     Commands.slash("unlink-admin", "Hủy liên kết tài khoản (Admin)")
                         .addOption(net.dv8tion.jda.api.interactions.commands.OptionType.STRING, "minecraft_name", "Tên tài khoản Minecraft", true)
                         .setDefaultPermissions(net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions.enabledFor(net.dv8tion.jda.api.Permission.ADMINISTRATOR))
-                ).queue(success -> {
-                    LogManager.info("Slash commands registered successfully for guild: " + guild.getName());
-                }, error -> {
-                    LogManager.severe("Failed to register slash commands: " + error.getMessage());
-                });
-            } else {
-                LogManager.warning("Could not find guild with ID: " + guildId + ". Slash commands not registered.");
-            }
-        } else {
-            LogManager.warning("Guild ID not configured! Slash commands not registered.");
-        }
+        ).queue(success -> LogManager.info("Slash commands registered successfully for guild: " + guild.getName()),
+                 error -> LogManager.severe("Failed to register slash commands: " + error.getMessage()));
     }
     
     private void cacheGuildAndChannelInfo() {
@@ -141,17 +152,13 @@ public class DiscordBotManager extends ListenerAdapter {
                 String ip = player.getAddress().getAddress().getHostAddress();
                 String isp = getISPFromIP(ip);
                 String location = getLocationFromIP(ip);
-                String avatarUrl = "https://minotar.net/armor/body/" + player.getName() + "/800.png";
+                String avatarUrl = "https://minotar.net/avatar/" + player.getName() + "/128.png";
                 EmbedBuilder embed = new EmbedBuilder()
                     .setTitle(config.getDiscordMessage("verify-title"))
                     .setDescription(config.getDiscordMessage("verify-desc"))
-                    .addField(config.getDiscordMessage("verify-field-player"), player.getName(), true)
-                    .addField(config.getDiscordMessage("verify-field-ip"), ip + " / " + isp, true)
-                    .addField(config.getDiscordMessage("verify-field-location"), location, true)
-                    .addField(config.getDiscordMessage("verify-field-time"), java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("HH:mm:ss dd/MM/yyyy")), true)
-                    .setColor(Color.ORANGE)
-                    .setFooter(config.getDiscordMessage("verify-footer"))
-                    .setTimestamp(java.time.Instant.now())
+                    .addField(config.getDiscordMessage("verify-field-player"), player.getName(), false)
+                    .addField(config.getDiscordMessage("verify-field-ip"), ip + " / " + isp, false)
+                    .addField(config.getDiscordMessage("verify-field-location"), location, false)
                     .setThumbnail(avatarUrl);
                 Button acceptButton = Button.success("verify_accept_" + verificationId, config.getDiscordMessage("verify-btn-accept"));
                 Button rejectButton = Button.danger("verify_reject_" + verificationId, config.getDiscordMessage("verify-btn-reject"));
@@ -174,17 +181,88 @@ public class DiscordBotManager extends ListenerAdapter {
         }, error -> LogManager.warning("Could not fetch Discord user with ID: " + discordId));
     }
     
-    // Placeholder methods for IP information (you can implement real IP lookup services)
+    // Tra cứu ISP/Location với cache + timeout dựa vào cấu hình ip-lookup
     private String getISPFromIP(String ip) {
-        // You can implement real ISP lookup here
-        // For now, return a placeholder
-        return "VNPT";
+        IpInfoCacheEntry cached = ipInfoCache.get(ip);
+        if (cached != null && !cached.isExpired()) {
+            return cached.isp;
+        }
+        IpInfoCacheEntry fetched = fetchIpInfo(ip);
+        return fetched != null ? fetched.isp : "Unknown ISP";
     }
     
     private String getLocationFromIP(String ip) {
-        // You can implement real location lookup here
-        // For now, return a placeholder
-        return "Hanoi / Vietnam";
+        IpInfoCacheEntry cached = ipInfoCache.get(ip);
+        if (cached != null && !cached.isExpired()) {
+            return cached.location;
+        }
+        IpInfoCacheEntry fetched = fetchIpInfo(ip);
+        return fetched != null ? fetched.location : "Unknown Location";
+    }
+
+    private IpInfoCacheEntry fetchIpInfo(String ip) {
+        if (!plugin.getConfig().getBoolean("ip-lookup.enabled", true)) {
+            return null;
+        }
+        // cache hit check again
+        IpInfoCacheEntry cached = ipInfoCache.get(ip);
+        if (cached != null && !cached.isExpired()) return cached;
+
+        try {
+            String provider = plugin.getConfig().getString("ip-lookup.provider", "ipapi");
+            int timeoutMs = plugin.getConfig().getInt("ip-lookup.timeout-ms", 2000);
+            int ttlSec = plugin.getConfig().getInt("ip-lookup.cache-ttl-seconds", 3600);
+
+            String url = provider.equalsIgnoreCase("ipinfo")
+                ? ("https://ipinfo.io/" + ip + "/json")
+                : ("https://ipapi.co/" + ip + "/json/");
+
+            java.net.HttpURLConnection conn = (java.net.HttpURLConnection) new java.net.URL(url).openConnection();
+            conn.setConnectTimeout(timeoutMs);
+            conn.setReadTimeout(timeoutMs);
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("User-Agent", "MineKeo2FA/1.0");
+            int code = conn.getResponseCode();
+            if (code != 200) {
+                return null;
+            }
+            try (java.io.InputStream is = conn.getInputStream();
+                 java.util.Scanner s = new java.util.Scanner(is, java.nio.charset.StandardCharsets.UTF_8).useDelimiter("\\A")) {
+                String body = s.hasNext() ? s.next() : "{}";
+                // parse minimal JSON without external lib
+                String isp = extractJsonField(body, provider.equalsIgnoreCase("ipinfo") ? "org" : "org");
+                if (isp == null || isp.isEmpty()) isp = extractJsonField(body, "isp");
+                String city = extractJsonField(body, "city");
+                String country = extractJsonField(body, provider.equalsIgnoreCase("ipinfo") ? "country" : "country_name");
+                String location = (city != null && !city.isEmpty() ? city : "") + (country != null && !country.isEmpty() ? (city != null && !city.isEmpty() ? " / " : "") + country : "");
+                if ((isp == null || isp.isEmpty()) && (location == null || location.isEmpty())) {
+                    return null;
+                }
+                IpInfoCacheEntry entry = new IpInfoCacheEntry(
+                    isp != null ? isp : "Unknown ISP",
+                    location != null && !location.isEmpty() ? location : "Unknown Location",
+                    ttlSec * 1000L
+                );
+                ipInfoCache.put(ip, entry);
+                return entry;
+            }
+        } catch (Exception ignored) {
+            return null;
+        }
+    }
+
+    private String extractJsonField(String json, String field) {
+        // Rất đơn giản: tìm "field":"value" hoặc "field":value
+        String key = "\"" + field + "\"";
+        int idx = json.indexOf(key);
+        if (idx < 0) return null;
+        int colon = json.indexOf(":", idx + key.length());
+        if (colon < 0) return null;
+        int startQuote = json.indexOf('"', colon + 1);
+        if (startQuote < 0) return null;
+        int endQuote = json.indexOf('"', startQuote + 1);
+        if (endQuote < 0) return null;
+        return json.substring(startQuote + 1, endQuote);
     }
     
     public void sendRecoveryCode(String discordId, String playerName, String recoveryCode) {
@@ -375,11 +453,10 @@ public class DiscordBotManager extends ListenerAdapter {
         // Send success message
         event.reply(config.getDiscordMessage("link-success")).setEphemeral(true).queue();
         
-        // Notify player in game
+        // Notify player in game (đưa toàn bộ text vào lang.yml)
         if (player != null && player.isOnline()) {
             player.sendMessage(config.getMessage("link-success"));
-            player.sendMessage("§8[§bMineKeo2FA§8] §aTài khoản đã được liên kết với Discord!");
-            player.sendMessage("§8[§bMineKeo2FA§8] §a2FA đã được bật tự động!");
+            player.sendMessage(config.getMessage("auto-2fa-enabled"));
         }
     }
     
@@ -799,6 +876,17 @@ public class DiscordBotManager extends ListenerAdapter {
                 }
             }.runTask(plugin);
         }
+    }
+
+    // Dọn các verification/unlink quá cũ (tránh rò rỉ map tạm)
+    public void cleanupStaleRequests(long olderThanMillis) {
+        long now = System.currentTimeMillis();
+        pendingVerifications.entrySet().removeIf(e -> {
+            // Không có timestamp trong dữ liệu; hiện tại không thể xác định tuổi, nên chỉ dựa vào messageId null
+            return e.getValue().getMessageId() == null; // lightweight cleanup
+        });
+        pendingUnlinks.entrySet().removeIf(e -> false); // placeholder nếu cần tiêu chí
+        // Ghi chú: Có thể mở rộng VerificationData/UnlinkData để lưu createdAt và cleanup chính xác hơn.
     }
     
     public void sendStaffIPAlert(String playerName, String ip) {
